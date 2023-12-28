@@ -1,5 +1,3 @@
-// EditUser.tsx
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList,TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList,TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditProduct from './EditProduct';
 
 
 export interface Product {
@@ -43,13 +44,53 @@ const ProductList: React.FC = () => {
   
 
   const handleDeleteProduct = async (productId: string) => {
-    try {
+    // Display a confirmation dialog
+  Alert.alert(
+    'Confirm Deletion',
+    'Are you sure you want to delete this product?',
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        onPress: async () => {
+          try {
+
       const updatedProductList = (productListData || []).filter(product => product.id !== productId);
       await AsyncStorage.setItem('productList', JSON.stringify(updatedProductList));
       setProductListData(updatedProductList);
     } catch (error) {
       console.error('Error deleting product:', error);
     }
+  },
+    style: 'destructive',
+    },
+  ],
+  { cancelable: true }
+  );
+  };
+
+
+  const handleEditProduct = async (editedProduct: Product) => {
+    if (editingProduct) {
+      try {
+        const updatedProductList = (productListData || []).map(product => (
+          product.id === editingProduct.id ? editedProduct : product
+        ));
+        await AsyncStorage.setItem('productList', JSON.stringify(updatedProductList));
+        setProductListData(updatedProductList);
+
+        setEditingProduct(null);
+      } catch (error) {
+        console.error('Error editing product: ', error);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
   };
 
   const renderProductItem = ({ item }: { item: Product }) => (
@@ -58,13 +99,32 @@ const ProductList: React.FC = () => {
       <Text>Name: {item.name}</Text>
       <Text>Price: {item.price}</Text>
       <Text>Description: {item.description}</Text>
-    
+
+    {/* Edit button */}
+    <TouchableOpacity onPress={() => setEditingProduct(item)}>
+      <View style={styles.editButton}>
+        <Text style={{ color: 'white' }}>Edit</Text>
+      </View>
+    </TouchableOpacity>
+
       {/* Delete button */}
       <TouchableOpacity onPress={() => handleDeleteProduct(item.id)}>
         <View style={styles.deleteButton}>
           <Text style={{ color: 'white' }}>Delete</Text>
         </View>
       </TouchableOpacity>
+
+      {/* Render EditProduct component when editingProduct is not null */}
+    {editingProduct && (
+      <EditProduct
+        user={editingProduct}
+        onSave={handleEditProduct}
+        onCancel={handleCancelEdit}
+      />
+    )}
+
+
+
     </View>
   );
 
@@ -136,6 +196,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
     borderRadius: 4,
     padding: 8,
+    alignItems: 'center',
+  },
+  editButton:{
+    backgroundColor: 'blue', // Adjust the color as needed
+    borderRadius: 4,
+    padding: 8,
+    marginTop: 16,
     alignItems: 'center',
   },
 

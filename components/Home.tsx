@@ -12,7 +12,7 @@ const Home=({navigation}:HomeProps)=>{
             <Text style={{fontSize:32,textAlign:"center",marginTop:64,marginBottom:72}}>Welcome</Text>
             < Button title="Go to login" onPress={()=>navigation.navigate('Login')}/>
                 <Text style={{fontSize:16,textAlign:'center',margin:14}}>Not already a user?</Text>
-                {/* <Button title='Sign Up' onPress={()=>navigation.navigate('Signup')}/> */}
+                <Button title='Sign Up' onPress={()=>navigation.navigate('Signup')}/>
                 <View style={styles.button}>
                 <Button title='View Users' onPress={()=>navigation.navigate('Users')}/>
                   </View>
