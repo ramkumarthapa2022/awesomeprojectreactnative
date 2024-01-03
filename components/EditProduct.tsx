@@ -1,25 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product } from './ProductList';
-
+import { launchImageLibrary,launchCamera,ImageLibraryOptions,ImagePickerResponse } from 'react-native-image-picker';
 interface EditProductProps {
   user: Product;
   onSave: (editedProduct: Product) => void;
   onCancel: () => void;
 }
-
+declare function alert(message?:any):void; 
 const EditProduct: React.FC<EditProductProps> = ({ user, onSave, onCancel }) => {
   const [editedProductname, setEditedProductname] = useState<string>(user.name); // Ensure that the state type matches the data type
   const [editedPrice, setEditedPrice] = useState<number>(user.price); // Ensure that the state type matches the data type
   const [editedDescription, setEditedDescription] = useState<string>(user.description); // Ensure that the state type matches the data type
+  const [editedImage, setEditedImage] = useState<string>(user.image); // Ensure that the state type matches the data type
+  const handleChooseImage=()=>{
+    const options:ImageLibraryOptions={
+      mediaType:'photo',
+      includeBase64:false,
+      maxHeight:2000,
+      maxWidth:2000,
+    }
 
+  launchImageLibrary(options, (response:ImagePickerResponse) => {
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.errorMessage) {
+      console.log('Image picker error: ', response.errorMessage);
+      alert('Image picker error: '+ response.errorMessage);
+    } else {
+      let imageUri = response.assets && response.assets[0]?.uri;
+      if(imageUri!==undefined){
+
+        setEditedImage(imageUri);
+    
+      }
+    }
+  });
+};
+  const handleCameraLaunch=()=>{
+    const options:ImageLibraryOptions={
+      mediaType:'photo',
+      includeBase64:false,
+      maxHeight:2000,
+      maxWidth:2000,
+    }
+    launchCamera(options, (response:ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled camera');
+      } else if (response.errorMessage) {
+        console.log('Camera Error: ', response.errorMessage);
+        alert('Camera Error: '+ response.errorMessage);
+      } else {
+        
+        let imageUri = response.assets && response.assets[0]?.uri;
+      if(imageUri!==undefined){
+        setEditedImage(imageUri);
+      
+      }  
+      }
+    });
+  }
   const handleSave = () => {
     const editedProduct: Product = {
       id: user.id,
       name: editedProductname,
       price: editedPrice,
       description: editedDescription,
+      image:editedImage,
     };
     onSave(editedProduct);
   };
@@ -48,6 +96,18 @@ const EditProduct: React.FC<EditProductProps> = ({ user, onSave, onCancel }) => 
         value={editedDescription}
         onChangeText={(text) => setEditedDescription(text)}
       />
+      <View style={{margin:10}}>
+          <Button title='Choose Image' onPress={handleChooseImage}/>
+          {
+            editedImage && <Image source={{uri:editedImage}} style={{width:100,height:100}} />
+          }
+          </View>
+          <View style={{margin:10}}>
+          <Button title='Camera' onPress={handleCameraLaunch}/>
+          {
+            editedImage && <Image source={{uri:editedImage}} style={{width:100,height:100}} />
+          }
+          </View>
       <View style={styles.button}>
         <Button title="Save Changes" onPress={handleSave} />
       </View>

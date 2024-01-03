@@ -1,22 +1,75 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
-
+import { View, Text, StyleSheet, TextInput, Button,Image } from 'react-native';
+import { launchImageLibrary,launchCamera, ImageLibraryOptions,ImagePickerResponse} from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values'
 import {v4 as uuidv4} from 'uuid'
-
+declare function alert(message?:any):void;
 const AddProduct = () => {
   const [name, setProductName] = useState('');
   const [price, setProductPrice] = useState('');
   const [description, setProductDescription] = useState('');
+  const [image,setImage] =useState('');
 
+  const handleChooseImage=()=>{
+    const options:ImageLibraryOptions={
+      mediaType:'photo',
+      includeBase64:false,
+      maxHeight:2000,
+      maxWidth:2000,
+    }
+
+  launchImageLibrary(options, (response:ImagePickerResponse) => {
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.errorMessage) {
+      console.log('Image picker error: ', response.errorMessage);
+      alert('Image picker error: '+ response.errorMessage);
+    } else {
+      let imageUri = response.assets && response.assets[0]?.uri;
+      if(imageUri!==undefined){
+
+        setImage(imageUri);
+    
+      }
+    }
+  });
+};
+  const handleCameraLaunch=()=>{
+    const options:ImageLibraryOptions={
+      mediaType:'photo',
+      includeBase64:false,
+      maxHeight:2000,
+      maxWidth:2000,
+    }
+    launchCamera(options, (response:ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled camera');
+      } else if (response.errorMessage) {
+        console.log('Camera Error: ', response.errorMessage);
+        alert('Camera Error: '+ response.errorMessage);
+      } else {
+        
+        let imageUri = response.assets && response.assets[0]?.uri;
+      if(imageUri!==undefined){
+        setImage(imageUri);
+      
+      }  
+      }
+    });
+  }
   const handleSave =async () => {
+    if (!name || !price || !description || !image) {
+      alert('Please fill in all fields and choose an image.');
+      return;
+    }
     const productId=uuidv4()
     const newProduct={
         id:productId,
         name,
         price,
         description,
+        image,
 
     }
     try{
@@ -27,7 +80,7 @@ const AddProduct = () => {
         console.log('product data saved')
 
     } catch (error){
-        console.error('error saving data',error);
+        console.error('Error saving data',error);
     }
     console.log('save button pressed');
   }
@@ -53,6 +106,19 @@ const AddProduct = () => {
             value={description}
             onChangeText={(text) => setProductDescription(text)}
           />
+          <View style={{margin:10}}>
+          <Button title='Choose Image' onPress={handleChooseImage}/>
+          {
+            image && <Image source={{uri:image}} style={{width:100,height:100}} />
+          }
+          </View>
+          <View style={{margin:10}}>
+          <Button title='Camera' onPress={handleCameraLaunch}/>
+          {
+            image && <Image source={{uri:image}} style={{width:100,height:100}} />
+          }
+          </View>
+           
           <Button title="Save data" onPress={handleSave} />
         </View>
       );
@@ -86,3 +152,5 @@ const AddProduct = () => {
       },
     });    
 export default AddProduct;
+
+

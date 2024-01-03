@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList,TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList,TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditProduct from './EditProduct';
 
@@ -9,6 +9,7 @@ export interface Product {
   name: string;
   price: number;
   description: string;
+  image:string;
 }
 
 const ProductList: React.FC = () => {
@@ -99,6 +100,7 @@ const ProductList: React.FC = () => {
       <Text>Name: {item.name}</Text>
       <Text>Price: {item.price}</Text>
       <Text>Description: {item.description}</Text>
+      {item.image && <Image source={{uri:item.image}} style={styles.productImage}/>}
 
     {/* Edit button */}
     <TouchableOpacity onPress={() => setEditingProduct(item)}>
@@ -213,6 +215,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     alignItems: 'center',
   },
+  productImage:{
+    width:100,
+    height:100,
+    marginTop:8,
+    borderRadius:8,
+  }
 });
 
 export default ProductList;
